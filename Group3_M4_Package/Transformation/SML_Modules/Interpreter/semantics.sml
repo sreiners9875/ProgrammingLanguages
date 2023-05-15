@@ -101,7 +101,7 @@ fun E'( itree(inode("expression",_), [logicalOr] ), m) = E'(logicalOr, m)
             val(v1, m1) = E'(equality, m)
             val(v2, m2) = E'(relational, m1)
         in
-            (Boolean (dnvToInt v1 != dnvToInt v2), m2)
+            (Boolean (dnvToInt v1 <> dnvToInt v2), m2)
         end
         
   | E'( itree(inode("equality",_), [relational] ), m) = E'(relational, m)
@@ -110,7 +110,7 @@ fun E'( itree(inode("expression",_), [logicalOr] ), m) = E'(logicalOr, m)
   | E'( itree(inode("relational",_), [relational, itree(inode(">",_), []), additive] ), m) =
         let
             val(v1, m1) = E'(relational, m)
-            val(v2, m2) = E'(additive1, m1)
+            val(v2, m2) = E'(additive, m1)
         in
             (Boolean (dnvToInt v1 > dnvToInt v2), m2)
         end
@@ -166,7 +166,7 @@ fun E'( itree(inode("expression",_), [logicalOr] ), m) = E'(logicalOr, m)
             val(v1, m1) = E'(multiplicative, m)
             val(v2, m2) = E'(factor, m1)
         in
-            (Integer (dnvToInt v1 * dnvToInt), m2)
+            (Integer (dnvToInt v1 * dnvToInt v2), m2)
         end
   
   | E'( itree(inode("multiplicative",_), [multiplicative, itree(inode("/",_), []), factor] ), m) =
@@ -174,7 +174,7 @@ fun E'( itree(inode("expression",_), [logicalOr] ), m) = E'(logicalOr, m)
             val(v1, m1) = E'(multiplicative, m)
             val(v2, m2) = E'(factor, m1)
         in
-            (Integer (dnvToInt v1 div dnvToInt), m2)
+            (Integer (dnvToInt v1 div dnvToInt v2), m2)
         end
   
   | E'( itree(inode("multiplicative",_), [multiplicative, itree(inode("%",_), []), factor] ), m) =
@@ -182,7 +182,7 @@ fun E'( itree(inode("expression",_), [logicalOr] ), m) = E'(logicalOr, m)
             val(v1, m1) = E'(multiplicative, m)
             val(v2, m2) = E'(factor, m1)
         in
-            (Integer (dnvToInt v1 mod dnvToInt), m2)
+            (Integer (dnvToInt v1 mod dnvToInt v2), m2)
         end
   
   | E'( itree(inode("multiplicative",_), [factor] ), m) = E'(factor, m)
@@ -276,6 +276,7 @@ fun E'( itree(inode("expression",_), [logicalOr] ), m) = E'(logicalOr, m)
   (* ERROR HANDLING *)
   | E' _ = raise Fail("Error in Model.E' - this should never occur")
 
+(*
 fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
   | M( itree(inode("statementList",_), [ statement, statementList ] ), m) = M(statementList, M(statement, m))
   | M( itree(inode("statementList",_), [ epsilon ] ), m) = m
@@ -350,7 +351,7 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
   (* ERROR HANDLING *)
   | M( itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn M root = " ^ x_root ^ "\n\n")
   | M _ = raise Fail("Error in Model.M - this should never occur")
-
+*)
 (* =========================================================================================================== *)
 end (* struct *)
 (* =========================================================================================================== *)
