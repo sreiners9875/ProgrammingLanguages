@@ -57,8 +57,15 @@ fun accessEnv(name : string, (environ: env, str: store)) : (string * loc)=
 
 
 fun getLoc((t: string, l:loc)): loc = l
-    
 
+fun getType(typ: string, location:loc, (environ: env, str: store)): string = 
+    let 
+        val result = List.find (fn (_, t, l) => t = typ andalso location = l) environ 
+    in
+        case result of NONE => ERR
+        | SOME(tp,loc) =>  tp
+    end
+    
 fun updateEnv(name : string, datatyp: string, LocationOrRequest: loc,(environ: env, str: store))=
     if LocationOrRequest = ~1 then
         let
