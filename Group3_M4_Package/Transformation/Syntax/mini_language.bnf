@@ -1,0 +1,97 @@
+USE_LR_PARSER 
+
+prog 
+
+(* =================================== Backus-Naur Form (BNF) ============================================ *) 
+
+(* ======================================================================================================= *) 
+
+(* ======================================= Statement List ================================================ *) 
+
+<prog>               ::= <statementList>                                     .             
+
+<statementList>      ::= <statement> <statementList>  
+                       | <epsilon>                                           .  
+
+<statement>          ::= <assignment> ";"
+                        | <forLoop>
+                        | <whileLoop>
+                        | <declaration> ";"
+                        | <ifThen>
+                        | <ifThenElse>
+                        | <output> ";"
+                        | <block>
+                        | <prefix> ";"
+                        | <postfix> ";"
+                        | <initialization> ";"                               .
+
+<assignment>         ::= id "=" <expression>                                                  .
+
+<declaration>        ::= "int" id | "bool" id                                               .
+
+<initialization>     ::= "int" id "=" <expression>
+                       | "bool" id "=" <expression>                                           .
+
+<block>              ::= "{" <statementList> "}"                                                .
+
+<forLoop>            ::= "for" "(" <forInitial> ";" <expression> ";" <modifiedId> ")" <block>       .
+
+<forInitial>         ::= "int" id "=" <expression>                                              .
+
+<whileLoop>          ::= "while" "(" <expression> ")" <block>                                   .
+
+<ifThen>             ::= "if" "(" <expression> ")" <block>                                      .
+
+<ifThenElse>         ::= "if" "(" <expression> ")" <block> "else" <block>                       .
+
+<output>             ::= "print" "(" <expression> ")"                                     .
+
+<epsilon>            ::= .
+
+(* ====================================== Expressions List =============================================== *)
+
+<expression>         ::= <logicalOr>                                                            .
+
+<logicalOr>          ::= <logicalOr> "||" <logicalAnd>
+                       | <logicalAnd>                                                           .
+
+<logicalAnd>         ::= <logicalAnd> "&&" <equality>
+                       | <equality>                                                             .
+
+<equality>           ::= <equality> "==" <relational>
+                       | <equality> "!=" <relational>
+                       | <relational>                                                           .
+
+<relational>         ::= <relational> ">" <additive>
+                       | <relational> ">=" <additive>
+                       | <relational> "<" <additive>
+                       | <relational> "<=" <additive>
+                       | <additive>                                                             .
+
+<additive>           ::= <additive> "+" <multiplicative>
+                       | <additive> "-" <multiplicative>
+                       | <multiplicative>                                                       .
+
+<multiplicative>     ::= <multiplicative> "*" <factor>
+                       | <multiplicative> "/" <factor>
+                       | <multiplicative> "%" <factor>
+                       | <factor>                                                               .
+
+<factor>             ::= "~" <factor>
+                       | "!" <factor>
+                       | <exponent>                                                             .
+
+<exponent>           ::= <base> "^" <exponent> | <base>                                         .
+
+<base>               ::= "(" <expression> ")"
+                       | "|" <expression> "|"
+                       | <modifiedId>
+                       | id
+                       | integer
+                       | boolean                                                                .
+
+<modifiedId>         ::= <prefix> | <postfix>                                                   .
+
+<prefix>             ::= "++" id | "--" id                                                      .
+
+<postfix>            ::= id "++" | id "--"                                                      .
