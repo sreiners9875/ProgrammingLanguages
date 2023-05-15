@@ -114,6 +114,12 @@ fun typeToString BOOL   = "bool"
 fun dnvToString (Integer x) = Int.toString x
  |  dnvToString (Boolean x) = Bool.toString x
  
+fun dnvToBool (Boolean x) = x
+ |  dnvToBool _ = raise Fail("Error dnvToBool.");
+
+fun dnvToInt (Integer x) = x
+ |  dnvToInt _ = raise Fail("Error dnvToInt.");
+ 
 fun envEntryToString (id, t, loc) =
     "(" ^ id ^ "," ^ typeToString t ^ "," ^ Int.toString loc ^ ")";
     
