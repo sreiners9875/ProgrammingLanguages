@@ -155,7 +155,7 @@ fun showStr [] = print "\n"
                                 showStr store
                             );
 
-fun printM (env, s, c) = (showEnv(env); showStr(s); print(Int.toString c));
+fun printM (env, s, c) = (showEnv(env); showStr(s); print("Counter: " ^ Int.toString c));
 (* =========================================================================================================== *)
 end; (* struct *) 
 (* =========================================================================================================== *)

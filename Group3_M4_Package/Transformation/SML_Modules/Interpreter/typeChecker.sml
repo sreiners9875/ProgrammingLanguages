@@ -252,8 +252,12 @@ fun typeCheck( itree(inode("prog",_), [ statementList ] ), m) = typeCheck(statem
   (* USED FOR FORLOOP, WHILELOOP, IFTHEN, IFTHENELSE, BLOCK *)
   | typeCheck( itree(inode("statement",_), [ child] ), m) = typeCheck(child, m)
   
+  (* DECLARATION *)
+  
   | typeCheck( itree(inode("declaration",_), [itree(inode("int",_), []), id] ), m) = updateEnv(getLeaf(id), INT, Model.getCounter(m), m)
   | typeCheck( itree(inode("declaration",_), [itree(inode("bool",_), []), id] ), m) = updateEnv(getLeaf(id), BOOL, Model.getCounter(m), m)
+  
+  (* ASSIGNMENT *)
   
   | typeCheck( itree(inode("assignment",_), [id, itree(inode("=",_), []), expression] ), m) = 
         let
@@ -263,6 +267,87 @@ fun typeCheck( itree(inode("prog",_), [ statementList ] ), m) = typeCheck(statem
             if t1 = t2 then m
             else tError("Type error[assignment].")
         end
+  
+  (* INITIALIZATION *)
+  | typeCheck( itree(inode("initialization",_), [itree(inode("int",_), []), id, itree(inode("=",_), []), expression] ), m) =
+        let
+            val m1 = updateEnv(getLeaf(id), INT, Model.getCounter(m), m)
+            val t1 = typeOf(expression, m)
+        in
+            if t1 = INT then m1
+            else tError("Type error[initialization].")
+        end
+        
+  | typeCheck( itree(inode("initialization",_), [itree(inode("bool",_), []), id, itree(inode("=",_), []), expression] ), m) =
+       let
+            val m1 = updateEnv(getLeaf(id), BOOL, Model.getCounter(m), m)
+            val t1 = typeOf(expression, m)
+        in
+            if t1 = BOOL then m1
+            else tError("Type error[initialization].")
+        end
+  
+  (* BLOCK *)
+  | typeCheck( itree(inode("block",_), [itree(inode("{",_), []), statementList, itree(inode("}",_), [])] ), m) =
+        let
+            val m1 = typeCheck(statementList, m)
+        in
+            m1
+        end
+  
+  (* FORLOOP *)
+  | typeCheck( itree(inode("forLoop",_), [itree(inode("for",_), []), itree(inode("(",_), []), forInitial, itree(inode(";",_), []), expression, itree(inode(";",_), []), modifiedId, itree(inode(")",_), []), block] ), m) =
+        let
+            val m1 = typeCheck(forInitial, m)
+            val t1 = typeOf(expression, m)
+            val t2 = typeOf(modifiedId, m)
+        in
+            if t1 = BOOL andalso t2 = INT then
+                typeCheck(block, m)
+            else tError("Type error[forLoop].")
+        end
+  
+  (* WHILELOOP *)
+  | typeCheck( itree(inode("whileLoop",_), [itree(inode("while",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []), block ] ), m) =
+        let
+            val t1 = typeOf(expression, m)
+        in
+            if t1 = BOOL then typeCheck(block, m)
+            else tError("Type error[whileLoop].")
+        end
+  
+  (* IFTHEN *)
+  | typeCheck( itree(inode("ifThen",_), [itree(inode("if",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []), block ] ), m) =
+        let
+            val t1 = typeOf(expression, m)
+            val m1 = typeCheck(block, m)
+        in
+            if t1 = BOOL then m
+            else tError("Type error[ifThen].")
+        end
+  
+  (* IFTHENELSE *)
+  | typeCheck( itree(inode("ifThenElse",_), [itree(inode("if",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []), block0, itree(inode("else",_), []), block1 ] ), m) =
+        let
+            val t1 = typeOf(expression, m)
+            val m1 = typeCheck(block0, m)
+            val m2 = typeCheck(block1, m)
+        in
+            if t1 = BOOL then m
+            else tError("Type error[ifThenElse].")
+        end
+  
+  (* OUTPUT *)
+  | typeCheck( itree(inode("output",_), [itree(inode("print",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []) ] ), m) =
+        let
+            val t1 = typeOf(expression, m)
+        in
+            if t1 = BOOL then m
+            else tError("Type error[output].")
+        end
+  
+  (* EPSILON *)
+  | typeCheck( itree(inode("epsilon",_), [] ), m) = m
   
   (* ERROR HANDLING *)
   | typeCheck( itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn typeCheck root = " ^ x_root ^ "\n\n")

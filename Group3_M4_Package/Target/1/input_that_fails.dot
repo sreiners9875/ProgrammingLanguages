@@ -1,0 +1,49 @@
+
+digraph "input_that_fails"
+{
+struct1 [label="prog"]
+struct2 [label="statementList"]
+struct3 [label="statement"]
+struct4 [label="initialization"]
+struct5 [label="int"]
+struct4->struct5
+struct6 [label="id"]
+struct7 [label="x"]
+struct6->struct7
+struct4->struct6
+struct8 [label="="]
+struct4->struct8
+struct9 [label="expression"]
+struct10 [label="logicalOr"]
+struct11 [label="logicalAnd"]
+struct12 [label="equality"]
+struct13 [label="relational"]
+struct14 [label="additive"]
+struct15 [label="multiplicative"]
+struct16 [label="factor"]
+struct17 [label="exponent"]
+struct18 [label="base"]
+struct19 [label="boolean"]
+struct20 [label="true"]
+struct19->struct20
+struct18->struct19
+struct17->struct18
+struct16->struct17
+struct15->struct16
+struct14->struct15
+struct13->struct14
+struct12->struct13
+struct11->struct12
+struct10->struct11
+struct9->struct10
+struct4->struct9
+struct3->struct4
+struct21 [label=";"]
+struct3->struct21
+struct2->struct3
+struct22 [label="statementList"]
+struct23 [label="epsilon"]
+struct22->struct23
+struct2->struct22
+struct1->struct2
+}
