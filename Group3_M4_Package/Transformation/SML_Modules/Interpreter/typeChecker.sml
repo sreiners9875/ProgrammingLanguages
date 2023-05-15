@@ -33,7 +33,7 @@ fun typeOf( itree(inode("expression",_), [logicalOr] ), m) = typeOf(logicalOr, m
   | typeOf( itree(inode("logicalOr",_), [logicalAnd] ), m) = typeOf(logicalAnd, m)
   
   (* LOGICAL AND *)
-  | typeOf( itree(inode("logicalAnd",_), [logicalAnd, equality] ), m) = 
+  | typeOf( itree(inode("logicalAnd",_), [logicalAnd, itree(inode("&&",_), []), equality] ), m) = 
         let
             val t1 = typeOf(logicalAnd, m)
             val t2 = typeOf(equality, m)
@@ -146,7 +146,7 @@ fun typeOf( itree(inode("expression",_), [logicalOr] ), m) = typeOf(logicalOr, m
             else ERROR
         end
   
-  | typeOf( itree(inode("multiplicative",_), [multiplicative, itree(inode("&",_), []), factor] ), m) =
+  | typeOf( itree(inode("multiplicative",_), [multiplicative, itree(inode("%",_), []), factor] ), m) =
         let
             val t1 = typeOf(multiplicative, m)
             val t2 = typeOf(factor, m)
@@ -292,27 +292,39 @@ fun typeCheck( itree(inode("prog",_), [ statementList ] ), m) = typeCheck(statem
         let
             val m1 = typeCheck(statementList, m)
         in
-            m1
+            m
         end
   
   (* FORLOOP *)
   | typeCheck( itree(inode("forLoop",_), [itree(inode("for",_), []), itree(inode("(",_), []), forInitial, itree(inode(";",_), []), expression, itree(inode(";",_), []), modifiedId, itree(inode(")",_), []), block] ), m) =
         let
             val m1 = typeCheck(forInitial, m)
-            val t1 = typeOf(expression, m)
-            val t2 = typeOf(modifiedId, m)
+            val t1 = typeOf(expression, m1)
+            val t2 = typeOf(modifiedId, m1)
+            
+            val m2 = typeCheck(block, m1)
         in
-            if t1 = BOOL andalso t2 = INT then
-                typeCheck(block, m)
+            if t1 = BOOL then m
             else tError("Type error[forLoop].")
+        end
+  
+  (* FORINITIAL *)
+  | typeCheck( itree(inode("forInitial",_), [itree(inode("int",_), []), id, itree(inode("=",_), []), expression] ), m) =
+        let
+            val m1 = updateEnv(getLeaf(id), INT, Model.getCounter(m), m)
+            val t1 = typeOf(expression, m)
+        in
+            if t1 = INT then m1
+            else tError("Type error[forInitial].")
         end
   
   (* WHILELOOP *)
   | typeCheck( itree(inode("whileLoop",_), [itree(inode("while",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []), block ] ), m) =
         let
+            val m1 = typeCheck(block, m)
             val t1 = typeOf(expression, m)
         in
-            if t1 = BOOL then typeCheck(block, m)
+            if t1 = BOOL then m
             else tError("Type error[whileLoop].")
         end
   
@@ -342,12 +354,9 @@ fun typeCheck( itree(inode("prog",_), [ statementList ] ), m) = typeCheck(statem
         let
             val t1 = typeOf(expression, m)
         in
-            if t1 = BOOL then m
+            if t1 = BOOL orelse t1 = INT then m
             else tError("Type error[output].")
         end
-  
-  (* EPSILON *)
-  | typeCheck( itree(inode("epsilon",_), [] ), m) = m
   
   (* ERROR HANDLING *)
   | typeCheck( itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn typeCheck root = " ^ x_root ^ "\n\n")
