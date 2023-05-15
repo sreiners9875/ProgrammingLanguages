@@ -192,14 +192,14 @@ fun E'( itree(inode("expression",_), [logicalOr] ), m) = E'(logicalOr, m)
         let
             val(v1, m1) = E'(factor, m)
         in
-            (Integer (~ dnvToInt v1), m1)
+            (Integer (~ (dnvToInt v1)), m1)
         end
   
   | E'( itree(inode("factor",_), [itree(inode("!",_), []), factor] ), m) =
         let
             val(v1, m1) = E'(factor, m)
         in
-            (Boolean (not dnvToBool v1), m1)
+            (Boolean (not (dnvToBool v1)), m1)
         end
   
   | E'( itree(inode("factor",_), [exponent] ), m) = E'(exponent, m)
@@ -231,8 +231,8 @@ fun E'( itree(inode("expression",_), [logicalOr] ), m) = E'(logicalOr, m)
   (* PREFIX *)
   | E'( itree(inode("prefix",_), [itree(inode("++",_), []), id] ), m) =
         let
-            val idLoc = getLoc(accessEnv(getLeaf(id)))
-            val idStore = dnvToInt accessStore(idLoc, m)
+            val idLoc = getLoc(accessEnv(getLeaf(id), m))
+            val idStore = dnvToInt (accessStore(idLoc, m))
             val m1 = updateStore(idLoc, Integer(idStore + 1), m)
         in
             (Integer (idStore + 1), m1)
@@ -240,8 +240,8 @@ fun E'( itree(inode("expression",_), [logicalOr] ), m) = E'(logicalOr, m)
   
   | E'( itree(inode("prefix",_), [itree(inode("--",_), []), id] ), m) =
        let
-            val idLoc = getLoc(accessEnv(getLeaf(id)))
-            val idStore = dnvToInt accessStore(idLoc, m)
+            val idLoc = getLoc(accessEnv(getLeaf(id), m))
+            val idStore = dnvToInt (accessStore(idLoc, m))
             val m1 = updateStore(idLoc, Integer(idStore - 1), m)
         in
             (Integer (idStore - 1), m1)
@@ -250,8 +250,8 @@ fun E'( itree(inode("expression",_), [logicalOr] ), m) = E'(logicalOr, m)
   (* POSTFIX *)
   | E'( itree(inode("postfix",_), [id, itree(inode("++",_), [])] ), m) =
         let
-            val idLoc = getLoc(accessenv(getLeaf(id)))
-            val idStore = dnvToInt accessStore(idLoc, m)
+            val idLoc = getLoc(accessEnv(getLeaf(id), m))
+            val idStore = dnvToInt (accessStore(idLoc, m))
             val m1 = updateStore(idLoc, Integer(idStore + 1), m)
         in
             (Integer (idStore), m1)
@@ -259,22 +259,38 @@ fun E'( itree(inode("expression",_), [logicalOr] ), m) = E'(logicalOr, m)
   
   | E'( itree(inode("postfix",_), [id, itree(inode("--",_), [])] ), m) =
         let
-            val idLoc = getLoc(accessenv(getLeaf(id)))
-            val idStore = dnvToInt accessStore(idLoc, m)
+            val idLoc = getLoc(accessEnv(getLeaf(id), m))
+            val idStore = dnvToInt (accessStore(idLoc, m))
             val m1 = updateStore(idLoc, Integer(idStore - 1), m)
         in
             (Integer (idStore), m1)
         end
   
   (* DATATYPES *)
-  | E'( id as itree(inode("id",_), [_] ), m) = getType(accessEnv(getLeaf(id), m))
-
-  | E'( itree(inode("integer",_), [_] ), m) = INT
-
-  | E'( itree(inode("boolean",_), [_] ), m) = BOOL
+  | E'( integer as itree(inode("integer",_), [_] ), m) = (Integer (valOf(Int.fromString((getLeaf(integer))))), m)
+  | E'( boolean as itree(inode("boolean",_), [_] ), m) = (Boolean (valOf(Bool.fromString((getLeaf(boolean))))), m)
+  | E'( id as itree(inode("id",_), [_] ), m) = 
+    let
+        val (t, l) = accessEnv(getLeaf(id), m)
+        val v1 = accessStore(l, m)
+    in
+        (v1, m)
+    end
   
   (* ERROR HANDLING *)
   | E' _ = raise Fail("Error in Model.E' - this should never occur")
+
+fun M(  itree(inode("prog",_), 
+                [ 
+                    stmt_list
+                ] 
+             ), 
+        m
+    ) = m
+        
+  | M(  itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn M root = " ^ x_root ^ "\n\n")
+  
+  | M _ = raise Fail("error in Semantics.M - this should never occur")
 
 (*
 fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
@@ -351,7 +367,8 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
   (* ERROR HANDLING *)
   | M( itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn M root = " ^ x_root ^ "\n\n")
   | M _ = raise Fail("Error in Model.M - this should never occur")
-*)
+  
+  *)
 (* =========================================================================================================== *)
 end (* struct *)
 (* =========================================================================================================== *)
