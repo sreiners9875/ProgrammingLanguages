@@ -4,15 +4,17 @@ structure Model =
 struct 
 
 (* =========================================================================================================== *)
-(* This function may be useful to get the leaf node of a tree -- which is always a string (even for integers).
-   It is up to the interpreter to translate values accordingly (e.g., string to integer and string to boolean).
-   
-   Consult (i.e., open Int and open Bool) the SML structures Int and Bool for functions that can help with 
-   this translation. 
-*)
+(* Error handling *)
+(* =========================================================================================================== *)
 
- fun getLeaf( term ) = CONCRETE.leavesToStringRaw term 
+exception runtime_error
+ 
+exception t_error
+ 
+fun error msg = (print msg; raise runtime_error);
 
+fun tError msg = (print msg; raise t_error);
+ 
 (* For your typeChecker you may want to have a datatype that defines the types 
   (i.e., integer, boolean and error) in your language. *)
 
@@ -23,6 +25,25 @@ datatype types = INT | BOOL | ERROR;
 *)
 datatype denotable_value =  Boolean of bool
                           | Integer of int;
+ 
+fun dnvToString (Integer x) = Int.toString x
+ |  dnvToString (Boolean x) = Bool.toString x
+ 
+fun dnvToBool (Boolean x) = x
+ |  dnvToBool _ = raise Fail("Error dnvToBool.");
+
+fun dnvToInt (Integer x) = x
+ |  dnvToInt _ = raise Fail("Error dnvToInt.");
+
+(* =========================================================================================================== *)
+(* This function may be useful to get the leaf node of a tree -- which is always a string (even for integers).
+   It is up to the interpreter to translate values accordingly (e.g., string to integer and string to boolean).
+   
+   Consult (i.e., open Int and open Bool) the SML structures Int and Bool for functions that can help with 
+   this translation. 
+*)
+
+ fun getLeaf( term ) = CONCRETE.leavesToStringRaw term 
                           
 type loc   = int
 type env   = (string * types * loc) list
@@ -37,52 +58,6 @@ type counter = int
    incremented. *)
 
 val initialModel = ( []:env, []:store, 0:counter )
-val error = print("Error! Location not found")
-
-(* =========================================================================================================== *)
-(* For printing the model *)
-(* =========================================================================================================== *)
-
-exception runtime_error
- 
-exception t_error
-
-fun typeToString BOOL   = "bool"
- |  typeToString INT    = "int"
- |  typeToString ERROR  = "error";
- 
-fun error msg = (print(msg), raise runtime_error);
-
-fun tError msg = (print(msg), raise t_error);
- 
-fun dnvToString (Integer x) = Int.toString x
- |  dnvToString (Boolean x) = Bool.toString x
- 
-fun dnvToBool (Boolean x) = x
- |  dnvToBool _ = raise Fail("Error dnvToBool.");
-
-fun dnvToInt (Integer x) = x
- |  dnvToInt _ = raise Fail("Error dnvToInt.");
- 
-fun envEntryToString (id, t, loc) =
-    "(" ^ id ^ "," ^ typeToString t ^ "," ^ Int.toString loc ^ ")";
-    
-fun storeEntryToString (loc, dnv) =
-    "(" ^ Int.toString loc ^ "," ^ dnvToString dnv ^ ")";
-    
-fun showEnv [] = print "\n"
- |  showEnv (entry::env) = (
-                                print("\n" ^ envEntryToString entry);
-                                showEnv env
-                            );
-                            
-fun showStr [] = print "\n"
- |  showStr (stored::store) = (
-                                print("\n" ^ storeEntryToString stored);
-                                showStr stored
-                            );
-
-fun printM (env, s, c) = (showEnv(env); showStr(s); print(Int.toString c));
 
 (* =========================================================================================================== *)
 (* HELPER FUNCTIONS *)
@@ -120,14 +95,14 @@ fun updateStore(loc0: loc, newValue: denotable_value, (environ: env, stored: sto
     let
         val msg = "Error: updateStore failed.";
         
-        fun aux (1oc1, nv1, []) = [(loc1, nv1)]
-          | aux (loc1, nv1, (sloc, sdnv)::store) =
-            if loc1 = sloc then
-               (loc1, nv1)::store
+        fun aux (loc2, nv2, []) = [(loc2, nv2)]
+          | aux (loc2, nv2, (sloc, sdnv)::store) =
+            if loc2 = sloc then
+               (loc2, nv2)::store
             else
-                (sloc, sdnv)::aux(loc1, nv1, store)
+                (sloc, sdnv)::aux(loc2, nv2, store)
     in
-        (environ, aux(loc, newValue, stored), c)
+        (environ, aux(loc0, newValue, stored), c)
     end
     
 fun accessEnv(id1: string, (environ: env, s: store, c: counter )) =
@@ -139,21 +114,48 @@ fun accessEnv(id1: string, (environ: env, s: store, c: counter )) =
                 if id1 = id then (t, loc)
                 else aux env;
     in
-        aux env
+        aux environ
     end;
 
 fun accessStore(loc0: loc, (environ : env, stored: store, c: counter)) =
     let
-        val msg = "Error: accessStore " ^ loc1 ^ " not found.";
+        val msg = "Error: accessStore " ^ Int.toString loc0 ^ " not found.";
         
         fun aux [] = error msg
             | aux ((loc1, denotable_value)::store) =
                 if loc0 = loc1 then denotable_value
                 else aux stored;
     in
-        aux store
+        aux stored
     end;
 
+(* =========================================================================================================== *)
+(* PRINT FUNCTIONS *)
+(* =========================================================================================================== *)
+
+fun typeToString BOOL   = "bool"
+ |  typeToString INT    = "int"
+ |  typeToString ERROR  = "error";
+ 
+fun envEntryToString (id, t, loc) =
+    "(" ^ id ^ "," ^ typeToString t ^ "," ^ Int.toString loc ^ ")";
+    
+fun storeEntryToString (loc, dnv) =
+    "(" ^ Int.toString loc ^ "," ^ dnvToString dnv ^ ")";
+    
+fun showEnv [] = print "\n"
+ |  showEnv (entry::env) = (
+                                print("\n" ^ envEntryToString entry);
+                                showEnv env
+                            );
+                            
+fun showStr [] = print "\n"
+ |  showStr (stored::store) = (
+                                print("\n" ^ storeEntryToString stored);
+                                showStr store
+                            );
+
+fun printM (env, s, c) = (showEnv(env); showStr(s); print(Int.toString c));
 (* =========================================================================================================== *)
 end; (* struct *) 
 (* =========================================================================================================== *)

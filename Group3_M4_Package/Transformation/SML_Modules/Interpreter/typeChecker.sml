@@ -30,7 +30,7 @@ fun typeOf( itree(inode("expression",_), [logicalOr] ), m) = typeOf(logicalOr, m
             else ERROR
         end
         
-  | typeOf( itree(inode("logicalAnd",_), [logicalAnd] ), m) = typeOf(logicalAnd, m)
+  | typeOf( itree(inode("logicalOr",_), [logicalAnd] ), m) = typeOf(logicalAnd, m)
   
   (* LOGICAL AND *)
   | typeOf( itree(inode("logicalAnd",_), [logicalAnd, equality] ), m) = 
@@ -42,7 +42,7 @@ fun typeOf( itree(inode("expression",_), [logicalOr] ), m) = typeOf(logicalOr, m
             else ERROR
         end
     
-  | typeOf( itree(inode("equality",_), [equality] ), m) = typeOf(equality, m)
+  | typeOf( itree(inode("logicalAnd",_), [equality] ), m) = typeOf(equality, m)
   
   (* EQUALITY *)
   | typeOf( itree(inode("equality",_), [equality, itree(inode("==",_), []), relational] ), m) =
@@ -65,7 +65,7 @@ fun typeOf( itree(inode("expression",_), [logicalOr] ), m) = typeOf(logicalOr, m
             else ERROR
         end
         
-  | typeOf( itree(inode("relational",_), [relational] ), m) = typeOf(relational, m)
+  | typeOf( itree(inode("equality",_), [relational] ), m) = typeOf(relational, m)
     
   (* RELATIONAL *)
   | typeOf( itree(inode("relational",_), [relational, itree(inode(">",_), []), additive] ), m) =
@@ -104,7 +104,7 @@ fun typeOf( itree(inode("expression",_), [logicalOr] ), m) = typeOf(logicalOr, m
             else ERROR
         end
   
-  | typeOf( itree(inode("additive",_), [additive] ), m) = typeOf(additive, m)
+  | typeOf( itree(inode("relational",_), [additive] ), m) = typeOf(additive, m)
   
   (* ADDITIVE *)
   | typeOf( itree(inode("additive",_), [additive, itree(inode("+",_), []), multiplicative] ), m) =
@@ -125,7 +125,7 @@ fun typeOf( itree(inode("expression",_), [logicalOr] ), m) = typeOf(logicalOr, m
             else ERROR
         end
   
-  | typeOf( itree(inode("multiplicative",_), [multiplicative] ), m) = typeOf(multiplicative, m)
+  | typeOf( itree(inode("additive",_), [multiplicative] ), m) = typeOf(multiplicative, m)
   
   (* MULTIPLICATIVE *)
   | typeOf( itree(inode("multiplicative",_), [multiplicative, itree(inode("*",_), []), factor] ), m) =
@@ -155,7 +155,7 @@ fun typeOf( itree(inode("expression",_), [logicalOr] ), m) = typeOf(logicalOr, m
             else ERROR
         end
   
-  | typeOf( itree(inode("factor",_), [factor] ), m) = typeOf(factor, m)
+  | typeOf( itree(inode("multiplicative",_), [factor] ), m) = typeOf(factor, m)
   
   (* FACTOR *)
   | typeOf( itree(inode("factor",_), [itree(inode("~",_), []), factor] ), m) =
@@ -174,7 +174,7 @@ fun typeOf( itree(inode("expression",_), [logicalOr] ), m) = typeOf(logicalOr, m
             else ERROR
         end
   
-  | typeOf( itree(inode("exponent",_), [exponent] ), m) = typeOf(exponent, m)
+  | typeOf( itree(inode("factor",_), [exponent] ), m) = typeOf(exponent, m)
   
   (* EXPONENT *)
   | typeOf( itree(inode("exponent",_), [base, itree(inode("^",_), []), exponent] ), m) =
@@ -186,30 +186,22 @@ fun typeOf( itree(inode("expression",_), [logicalOr] ), m) = typeOf(logicalOr, m
             else ERROR
         end
   
-  | typeOf( itree(inode("base",_), [base] ), m) = typeOf(base, m)
+  | typeOf( itree(inode("exponent",_), [base] ), m) = typeOf(base, m)
   
   (* BASE *)
   | typeOf( itree(inode("base",_), [itree(inode("(",_), []), expression, itree(inode(")",_), [])] ), m) = typeOf(expression, m)
   
   | typeOf( itree(inode("base",_), [itree(inode("|",_), []), expression, itree(inode("|",_), [])] ), m) = typeOf(expression, m)
   
-  | typeOf( itree(inode("base",_), [id] ), m) = getType(accessEnv(getLeaf(id), m))
-
-  | typeOf( itree(inode("base",_), [integer] ), _) = INT
-
-  | typeOf( itree(inode("base",_), [boolean] ), _) = BOOL
-  
   | typeOf( itree(inode("base",_), [modifiedId] ), m) = typeOf(modifiedId, m)
   
   (* MODIFIED ID *)
-  | typeOf( itree(inode("modifiedId",_), [prefix] ), m) = typeOf(prefix, m)
-  
-  | typeOf( itree(inode("modifiedId",_), [postfix] ), m) = typeOf(postfix, m)
+  | typeOf( itree(inode("modifiedId",_), [child] ), m) = typeOf(child, m)
   
   (* PREFIX *)
   | typeOf( itree(inode("prefix",_), [itree(inode("++",_), []), id] ), m) =
         let
-            val t1 = typeOf(getLeaf(id), m)
+            val t1 = getType(accessEnv(getLeaf(id), m))
         in
             if t1 = INT then INT
             else ERROR
@@ -217,28 +209,35 @@ fun typeOf( itree(inode("expression",_), [logicalOr] ), m) = typeOf(logicalOr, m
   
   | typeOf( itree(inode("prefix",_), [itree(inode("--",_), []), id] ), m) =
         let
-            val t1 = typeOf(getLeaf(id), m)
+            val t1 = getType(accessEnv(getLeaf(id), m))
         in
             if t1 = INT then INT
             else ERROR
         end
   
   (* POSTFIX *)
-  | typeOf( itree(inode("prefix",_), [id, itree(inode("++",_), [])] ), m) =
+  | typeOf( itree(inode("postfix",_), [id, itree(inode("++",_), [])] ), m) =
         let
-            val t1 = typeOf(getLeaf(id), m)
+            val t1 = getType(accessEnv(getLeaf(id), m))
         in
             if t1 = INT then INT
             else ERROR
         end
   
-  | typeOf( itree(inode("prefix",_), [id, itree(inode("--",_), [])] ), m) =
+  | typeOf( itree(inode("postfix",_), [id, itree(inode("--",_), [])] ), m) =
         let
-            val t1 = typeOf(getLeaf(id), m)
+            val t1 = getType(accessEnv(getLeaf(id), m))
         in
             if t1 = INT then INT
             else ERROR
         end
+  
+  (* DATATYPES *)
+  | typeOf( id as itree(inode("id",_), [_] ), m) = getType(accessEnv(getLeaf(id), m))
+
+  | typeOf( itree(inode("integer",_), [_] ), m) = INT
+
+  | typeOf( itree(inode("boolean",_), [_] ), m) = BOOL
   
   (* ERROR HANDLING *)
   | typeOf _ = raise Fail("Error in Model.typeOf - this should never occur")
