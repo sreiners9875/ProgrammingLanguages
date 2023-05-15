@@ -14,7 +14,18 @@ struct
  
  fun int typeOf(integer_value, m) = INT 
  fun bool typeOf(boolean_value, m) = BOOL 
- fun (id, m) = getType(accessEnv(id, m)) 
+ fun typeOf(id, (environ:env, str:store)) = 
+    let 
+        val (t1,l1)  = accessEnv(getLeaf(id), (environ:env, str:store))
+        val t = getType(t1, l1, (environ:env, str:store))
+    in
+       t
+    end
+ 
+fun typeCheck(itree(inode("prog", _), [stmt_list]), m) = m 
+ | typeCheck(itree(inode(x_root, _), children), _) = 
+ raise General.Fail ("\n\nIn typeCheck root = " ^ x_root ^ "\n\n") 
+ | typeCheck _ = raise Fail ("Error in Model.typeCheck - this should never occur") 
  fun typeCheck(itree(inode("prog", _), [stmt_list]), m) = m 
  | typeCheck(itree(inode(x_root, _), children), _) = 
  raise General.Fail ("\n\nIn typeCheck root = " ^ x_root ^ "\n\n") 
@@ -107,11 +118,16 @@ struct  open Model;
  | typeCheck _ = raise Fail ("Error in Model.typeCheck - this should never occur") 
  
  
-  fun typeOf(itree(inode("expression", _), [stmt_list]), m) = m 
+ 
+ 
+ 
+ 
+ (* Please Don't do anything with the below function it is debugged *)
+ 
+  fun typeOf(itree(inode("expression", _), [logicalOr]), m) = m 
  | typeOf(itree(inode(x_root, _), children), _) = 
  raise General.Fail ("\n\nIn typeCheck root = " ^ x_root ^ "\n\n") 
- | typeOf _ = raise Fail ("Error in Model.typeCheck - this should never occur") 
-
+ | typeOf _ = raise Fail ("Error in Model.typeCheck - this should never occur")
  | typeOf(itree(inode("additive", _), 
 				[
 					additive,
@@ -145,7 +161,7 @@ struct  open Model;
 					multiplicative
 				]
 				)
-			, m) =  = typeOf(multiplicative, m) 
+			, m) =  typeOf(multiplicative, m) 
  
  | typeOf(itree(inode("multiplicative", _), 
 				[
@@ -246,8 +262,8 @@ struct  open Model;
 						val t2 = typeOf(relational, m) 
 					 in 
 						if t1 = BOOL andalso t2 = BOOL then BOOL 
-						else if t1 = INT andalso t2 = INT then BOOl 
-							else ERROR 
+						else if t1 = INT andalso t2 = INT then BOOL 
+							else ERR
 					 end
  
  | typeOf(itree(inode("relational", _), 
@@ -263,7 +279,7 @@ struct  open Model;
 						val t2 = typeOf(relational, m) 
 					 in 
 						if t1 = BOOL andalso t2 = BOOL then BOOL 
-						else if t1 = INT andalso t2 = INT then BOOl 
+						else if t1 = INT andalso t2 = INT then BOOL 
 							else ERR 
 					 end 
 					 
@@ -428,8 +444,11 @@ struct  open Model;
 
 
  
-	
- | typeOf([[exponent]], m) = typeOf(exponent, m) 
+| typeOf(itree(inode("exponent", _), 
+					[
+						exponent
+					])
+			, m ) =typeOf(exponent, m) 
  
 
 
@@ -522,22 +541,11 @@ struct  open Model;
 			else ERR 
 		end		
 	
-	
-	
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
  | typeOf(_, _) = raise Fail "Unknown pattern encountered" 
  (* =========================================================================================================== *) 
  end (* struct *) 
  (* =========================================================================================================== *)
+ 
  
  
  
