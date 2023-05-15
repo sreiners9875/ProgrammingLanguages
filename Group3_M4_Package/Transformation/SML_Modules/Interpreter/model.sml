@@ -111,6 +111,14 @@ fun typeToString BOOL   = "bool"
  |  typeToString INT    = "int"
  |  typeToString ERROR  = "error";
  
+fun error msg = (print(msg), raise runtime_error);
+
+fun t_error msg = (print(msg), raise model_error);
+
+exception runtime_error
+ 
+exception model_error
+ 
 fun dnvToString (Integer x) = Int.toString x
  |  dnvToString (Boolean x) = Bool.toString x
  
