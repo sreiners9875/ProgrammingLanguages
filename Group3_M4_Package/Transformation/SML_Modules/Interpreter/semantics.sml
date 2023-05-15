@@ -63,6 +63,10 @@ open CONCRETE_REPRESENTATION;
             (3) the second child is a semi-colon   
 *)
 
+(* =========================================================================================================== *)
+(* EVALUATION OF E' *)
+(* =========================================================================================================== *)
+
 fun E'( itree(inode("expression",_), [logicalOr] ), m) = E'(logicalOr, m)
 
   (* LOGICAL OR *)
@@ -280,19 +284,10 @@ fun E'( itree(inode("expression",_), [logicalOr] ), m) = E'(logicalOr, m)
   (* ERROR HANDLING *)
   | E' _ = raise Fail("Error in Model.E' - this should never occur")
 
-fun M(  itree(inode("prog",_), 
-                [ 
-                    stmt_list
-                ] 
-             ), 
-        m
-    ) = m
-        
-  | M(  itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn M root = " ^ x_root ^ "\n\n")
-  
-  | M _ = raise Fail("error in Semantics.M - this should never occur")
+(* =========================================================================================================== *)
+(* EVALUATION OF M *)
+(* =========================================================================================================== *)
 
-(*
 fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
   | M( itree(inode("statementList",_), [ statement, statementList ] ), m) = M(statementList, M(statement, m))
   | M( itree(inode("statementList",_), [ epsilon ] ), m) = m
@@ -313,7 +308,7 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
   | M( itree(inode("assignment",_), [id, itree(inode("=",_), []), expression] ), m) = 
         let
             val(v1, m1) = E'(expression, m)
-            val loc = getLoc(accessEnv(getLeaf(id)))
+            val loc = getLoc(accessEnv(getLeaf(id), m))
             val m2 = updateStore(loc, v1, m1)
         in
             m2
@@ -322,53 +317,70 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
   (* INITIALIZATION *)
   | M( itree(inode("initialization",_), [itree(inode("int",_), []), id, itree(inode("=",_), []), expression] ), m) =
         let
-            val loc = getLoc(accessEnv(getLeaf(id))
-            val m2 = updateEnv(id, INT, loc)
+            val(v1, m1) = E'(expression, m)
+            val loc = getLoc(accessEnv(getLeaf(id), m))
+            val ty = getType(INT, loc)
+            val m2 = updateEnv(getLeaf(id), ty, loc)
         in
             m2
         end
         
   | M( itree(inode("initialization",_), [itree(inode("bool",_), []), id, itree(inode("=",_), []), expression] ), m) =
        let
-            val loc = getLoc(accessEnv(getLeaf(id))
-            val m2 = updateEnv(id, BOOL, loc)
+            val(v1, m1) = E'(expression, m)
+            val loc = getLoc(accessEnv(getLeaf(id), m))
+            val ty = getType(BOOL, loc)
+            val m2 = updateEnv(getLeaf(id), ty, loc)
         in
             m2
         end
-  
+  (*
   (* BLOCK *)
   | M( itree(inode("block",_), [itree(inode("{",_), []), statementList, itree(inode("}",_), [])] ), m) =
-        
+        let
+        in
+        end
   
   (* FORLOOP *)
   | M( itree(inode("forLoop",_), [itree(inode("for",_), []), itree(inode("(",_), []), forInitial, itree(inode(";",_), []), expression, itree(inode(";",_), []), modifiedId, itree(inode(")",_), []), block] ), m) =
-        
+        let
+        in
+        end
   
   (* FORINITIAL *)
   | M( itree(inode("forInitial",_), [itree(inode("int",_), []), id, itree(inode("=",_), []), expression] ), m) =
-        
+        let
+        in
+        end
   
   (* WHILELOOP *)
   | M( itree(inode("whileLoop",_), [itree(inode("while",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []), block ] ), m) =
-        
+        let
+        in
+        end
   
   (* IFTHEN *)
   | M( itree(inode("ifThen",_), [itree(inode("if",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []), block ] ), m) =
-        
+        let
+        in
+        end
   
   (* IFTHENELSE *)
   | M( itree(inode("ifThenElse",_), [itree(inode("if",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []), block0, itree(inode("else",_), []), block1 ] ), m) =
-        
+        let
+        in
+        end
   
   (* OUTPUT *)
   | M( itree(inode("output",_), [itree(inode("print",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []) ] ), m) =
-        
-  
+        let
+        in
+        end
+  *)
   (* ERROR HANDLING *)
   | M( itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn M root = " ^ x_root ^ "\n\n")
   | M _ = raise Fail("Error in Model.M - this should never occur")
-  
-  *)
+
 (* =========================================================================================================== *)
 end (* struct *)
 (* =========================================================================================================== *)
