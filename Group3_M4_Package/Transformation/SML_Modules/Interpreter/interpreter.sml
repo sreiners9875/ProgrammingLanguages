@@ -37,7 +37,7 @@ fun execute [ programTree ] =
                 
         print("\n\n\n");
         print(" ======================================= \n");
-        (* Model.printModel(result); *)
+        Model.printM(result);
         print("\n ======================================= \n");
         print("\n\n\n") 
     end

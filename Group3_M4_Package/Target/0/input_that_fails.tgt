@@ -1,0 +1,3 @@
+int y;
+int z;
+bool x = 10;
