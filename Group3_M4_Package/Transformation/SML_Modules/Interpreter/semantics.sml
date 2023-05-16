@@ -315,7 +315,7 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
         end
   
   (* INITIALIZATION *)
-  | M( itree(inode("initialization",_), [itree(inode("int",_), []), id, itree(inode("=",_), []), expression] ), m) =
+   | M( itree(inode("initialization",_), [itree(inode("int",_), []), id, itree(inode("=",_), []), expression] ), m) =
         let
             val(v1, m1) = E'(expression, m)
             val loc = getLoc(accessEnv(getLeaf(id), m1))
