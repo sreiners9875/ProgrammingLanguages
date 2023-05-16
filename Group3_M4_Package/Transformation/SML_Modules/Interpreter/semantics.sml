@@ -336,12 +336,14 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
         end
   
   (* BLOCK *)
-  (*
-  | M( itree(inode("block",_), [itree(inode("{",_), []), statementList, itree(inode("}",_), [])] ), m) =
+
+   | M( itree(inode("block",_), [itree(inode("{",_), []), statementList, itree(inode("}",_), [])] ), (env_0, s_0, c0)) =
         let
+            val (env_1, s_1, c1) = M(statementList, (env_0, s_0, c0))
+            val m2 = (env_0, s_1,c1)
         in
+            m2
         end
-  *)
   (* FORLOOP *)
   | M( itree(inode("forLoop",_), [itree(inode("for",_), []), itree(inode("(",_), []), forInitial, itree(inode(";",_), []), expression, itree(inode(";",_), []), modifiedId, itree(inode(")",_), []), block] ), m) =
         let
