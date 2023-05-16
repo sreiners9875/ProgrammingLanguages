@@ -315,12 +315,12 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
         end
   
   (* INITIALIZATION *)
-  | M( itree(inode("initialization",_), [itree(inode("int",_), []), id, itree(inode("=",_), []), expression] ), m) =
+   | M( itree(inode("initialization",_), [itree(inode("int",_), []), id, itree(inode("=",_), []), expression] ), m) =
         let
             val(v1, m1) = E'(expression, m)
-            val loc = getLoc(accessEnv(getLeaf(id), m))
+            val loc = getLoc(accessEnv(getLeaf(id), m1))
             val ty = getType(INT, loc)
-            val m2 = updateEnv(getLeaf(id), ty, loc)
+            val m2 = updateEnv(getLeaf(id), ty, loc, m1)
         in
             m2
         end
@@ -328,9 +328,9 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
   | M( itree(inode("initialization",_), [itree(inode("bool",_), []), id, itree(inode("=",_), []), expression] ), m) =
        let
             val(v1, m1) = E'(expression, m)
-            val loc = getLoc(accessEnv(getLeaf(id), m))
+            val loc = getLoc(accessEnv(getLeaf(id), m1))
             val ty = getType(BOOL, loc)
-            val m2 = updateEnv(getLeaf(id), ty, loc)
+            val m2 = updateEnv(getLeaf(id), ty, loc, m1)
         in
             m2
         end
