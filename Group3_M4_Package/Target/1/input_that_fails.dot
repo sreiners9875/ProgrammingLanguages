@@ -4,46 +4,74 @@ digraph "input_that_fails"
 struct1 [label="prog"]
 struct2 [label="statementList"]
 struct3 [label="statement"]
-struct4 [label="initialization"]
+struct4 [label="declaration"]
 struct5 [label="int"]
 struct4->struct5
 struct6 [label="id"]
-struct7 [label="x"]
+struct7 [label="y"]
 struct6->struct7
 struct4->struct6
-struct8 [label="="]
-struct4->struct8
-struct9 [label="expression"]
-struct10 [label="logicalOr"]
-struct11 [label="logicalAnd"]
-struct12 [label="equality"]
-struct13 [label="relational"]
-struct14 [label="additive"]
-struct15 [label="multiplicative"]
-struct16 [label="factor"]
-struct17 [label="exponent"]
-struct18 [label="base"]
-struct19 [label="boolean"]
-struct20 [label="true"]
-struct19->struct20
-struct18->struct19
-struct17->struct18
-struct16->struct17
-struct15->struct16
-struct14->struct15
-struct13->struct14
-struct12->struct13
-struct11->struct12
-struct10->struct11
-struct9->struct10
-struct4->struct9
 struct3->struct4
-struct21 [label=";"]
-struct3->struct21
+struct8 [label=";"]
+struct3->struct8
 struct2->struct3
-struct22 [label="statementList"]
-struct23 [label="epsilon"]
-struct22->struct23
-struct2->struct22
+struct9 [label="statementList"]
+struct10 [label="statement"]
+struct11 [label="declaration"]
+struct12 [label="int"]
+struct11->struct12
+struct13 [label="id"]
+struct14 [label="z"]
+struct13->struct14
+struct11->struct13
+struct10->struct11
+struct15 [label=";"]
+struct10->struct15
+struct9->struct10
+struct16 [label="statementList"]
+struct17 [label="statement"]
+struct18 [label="initialization"]
+struct19 [label="int"]
+struct18->struct19
+struct20 [label="id"]
+struct21 [label="x"]
+struct20->struct21
+struct18->struct20
+struct22 [label="="]
+struct18->struct22
+struct23 [label="expression"]
+struct24 [label="logicalOr"]
+struct25 [label="logicalAnd"]
+struct26 [label="equality"]
+struct27 [label="relational"]
+struct28 [label="additive"]
+struct29 [label="multiplicative"]
+struct30 [label="factor"]
+struct31 [label="exponent"]
+struct32 [label="base"]
+struct33 [label="boolean"]
+struct34 [label="true"]
+struct33->struct34
+struct32->struct33
+struct31->struct32
+struct30->struct31
+struct29->struct30
+struct28->struct29
+struct27->struct28
+struct26->struct27
+struct25->struct26
+struct24->struct25
+struct23->struct24
+struct18->struct23
+struct17->struct18
+struct35 [label=";"]
+struct17->struct35
+struct16->struct17
+struct36 [label="statementList"]
+struct37 [label="epsilon"]
+struct36->struct37
+struct16->struct36
+struct9->struct16
+struct2->struct9
 struct1->struct2
 }

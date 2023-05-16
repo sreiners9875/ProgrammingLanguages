@@ -336,21 +336,36 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
         end
   
   (* BLOCK *)
-  (*
-  | M( itree(inode("block",_), [itree(inode("{",_), []), statementList, itree(inode("}",_), [])] ), m) =
+   | M( itree(inode("block",_), [itree(inode("{",_), []), statementList, itree(inode("}",_), [])] ), (env_0, s_0, c0)) =
         let
-        in
-        end
-  *)
-  (* FORLOOP *)
-  | M( itree(inode("forLoop",_), [itree(inode("for",_), []), itree(inode("(",_), []), forInitial, itree(inode(";",_), []), expression, itree(inode(";",_), []), modifiedId, itree(inode(")",_), []), block] ), m) =
-        let
-            val(v1, m1) = E'(forInitial, m)
-            val(v2, m2) = E'(expression, m)
-            val(v3, m3) = E'(modifiedId, m)
-            val(v4, m4) = E'(block, m)
+            val (env_1, s_1, c1) = M(statementList, (env_0, s_0, c0))
+            val m2 = (env_0, s_1,c1)
         in
             m2
+        end
+     
+  (* FORLOOP *)
+  | M(itree(inode("forLoop",_), [itree(inode("for",_), []), itree(inode("(",_), []), forInitial, itree(inode(";",_), []), expression, itree(inode(";",_), []), modifiedId, itree(inode(")",_), []), block] ), m) =
+    let
+        val m1 = M(forInitial, m)
+        
+        fun doBlock(m2) =
+            let
+                val (v2, m3) = E'(expression, m2)
+            in
+                if dnvToBool(v2) then
+                    let
+                        val m4 = M(block, m3)
+                        val m5 = M(modifiedId, m4)
+                    in
+                        doBlock(m5)
+                    end
+                else
+                    m3
+            end
+        val m2 = doBlock(m1)
+    in
+        m2
         end
   
   (* FORINITIAL *)
@@ -363,25 +378,48 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
         in
             m2
         end
-  (*
-  (* WHILELOOP *)
-  | M( itree(inode("whileLoop",_), [itree(inode("while",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []), block ] ), m) =
-        let
-        in
-        end
-  
+        
   (* IFTHEN *)
-  | M( itree(inode("ifThen",_), [itree(inode("if",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []), block ] ), m) =
-        let
-        in
-        end
-  
+  | M(itree(inode("ifThen",_), [  itree(inode("if",_), [] ), itree(inode("(",_), [] ), expression, itree(inode(")",_), [] ), block] ), m) = 
+    let
+        val (v1, m1) = E' (expression, m)
+    in
+        if dnvToBool(v1) then M(block, m1)
+        else m1
+    end
+    
   (* IFTHENELSE *)
-  | M( itree(inode("ifThenElse",_), [itree(inode("if",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []), block0, itree(inode("else",_), []), block1 ] ), m) =
-        let
-        in
-        end
-  
+  | M(itree(inode("ifThenElse",_), [ itree(inode("if",_), [] ), itree(inode("(",_), [] ), expression, itree(inode(")",_), [] ), block0, itree(inode("else",_), [] ), block1 ] ), m ) =
+    let
+        val (v1, m1) = E' (expression, m)
+    in
+        if dnvToBool(v1) then M(block0, m1)
+        else M(block1, m1)
+    end
+    
+  (* WHILELOOP *)
+  (* Bug fixed and it is building *)
+  | M(itree(inode("whileLoop",_), [itree(inode("while",_), [] ), itree(inode("(",_), [] ), expression, itree(inode(")",_), [] ), block ] ), m) =
+    let
+        fun doBlock(itree(inode("block",_), 
+                [expression1]), m2) = 
+                let  
+                    val m3 = M(block, m2)
+                    val (v2, m4) = E'(expression1, m3)
+                in 
+                    if dnvToBool(v2) then doBlock(expression1, m4)
+                    else 
+                        m4
+                end
+        | doBlock(itree(inode("block",_), 
+                []), m2) = m2
+        | doBlock _ = raise Fail("Error in Model.M - this should never occur")
+        val (v1, m1) = E' (expression, m)
+    in
+        if dnvToBool(v1)  then doBlock(expression, m1)
+        else m1
+    end
+  (*
   (* OUTPUT *)
   | M( itree(inode("output",_), [itree(inode("print",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []) ] ), m) =
         let
