@@ -345,27 +345,28 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
         end
      
   (* FORLOOP *)
-  | M(itree(inode("forLoop",_), [itree(inode("for",_), []), itree(inode("(",_), []), forInitial, itree(inode(";",_), []), expression, itree(inode(";",_), []), modifiedId, itree(inode(")",_), []), block] ), m) =
-    let
-        val m1 = M(forInitial, m)
+   | M( itree(inode("forLoop",_), [itree(inode("for",_), []), itree(inode("(",_), []), forInitial, itree(inode(";",_), []), expression, itree(inode(";",_), []), modifiedId, itree(inode(")",_), []), block] ), m) =
+        let
+            fun doFor(itree(inode("block",_), [expression1]), m3) = 
+                let  
+                    val m4 = M(block, m3)
+                    val m5 = M(modifiedId, m4)
+                    val(v2, m6) = E'(expression1, m5)
+                in 
+                    if dnvToBool(v2) then doFor(expression1, m6)
+                    else 
+                        m6
+                end
+            | doFor(itree(inode("block",_), []), m3) = m3
+            | doFor _ = raise Fail("Error in Model.M - this should never occur")
         
-        fun doBlock(m2) =
-            let
-                val (v2, m3) = E'(expression, m2)
-            in
-                if dnvToBool(v2) then
-                    let
-                        val m4 = M(block, m3)
-                        val m5 = M(modifiedId, m4)
-                    in
-                        doBlock(m5)
-                    end
-                else
-                    m3
-            end
-        val m2 = doBlock(m1)
-    in
-        m2
+            val(v1, m1) = E'(forInitial, m)
+            val(v2, m2) = E'(expression, m1)
+        in
+            if dnvToBool(v1)  then doFor(expression, m2)
+            else
+            m2
+            
         end
   
   (* FORINITIAL *)
