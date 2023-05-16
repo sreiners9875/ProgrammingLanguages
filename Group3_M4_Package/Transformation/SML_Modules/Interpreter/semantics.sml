@@ -344,14 +344,28 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
         in
             m2
         end
+	
   (* FORLOOP *)
-  | M( itree(inode("forLoop",_), [itree(inode("for",_), []), itree(inode("(",_), []), forInitial, itree(inode(";",_), []), expression, itree(inode(";",_), []), modifiedId, itree(inode(")",_), []), block] ), m) =
+ | M( itree(inode("forLoop",_), [itree(inode("for",_), []), itree(inode("(",_), []), forInitial, itree(inode(";",_), []), expression, itree(inode(";",_), []), modifiedId, itree(inode(")",_), []), block] ), m) =
         let
+            fun doFor(itree(inode("block",_), [expression1]), m3) = 
+                let  
+                    val m4 = M(block, m3)
+                    val m5 = M(modifiedId, m4)
+                    val(v2, m6) = E'(expression1, m5)
+                in 
+                    if dnvToBool(v2) then doFor(expression1, m6)
+                    else 
+                        m6
+                end
+            | doFor(itree(inode("block",_), []), m3) = m3
+            | doFor _ = raise Fail("Error in Model.M - this should never occur")
+        
             val(v1, m1) = E'(forInitial, m)
-            val(v2, m2) = E'(expression, m)
-            val(v3, m3) = E'(modifiedId, m)
-            val(v4, m4) = E'(block, m)
+            val(v2, m2) = E'(expression, m1)
         in
+            if dnvToBool(v1)  then doFor(expression, m2)
+            else
             m2
         end
   
