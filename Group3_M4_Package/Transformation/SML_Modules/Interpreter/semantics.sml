@@ -399,7 +399,8 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
     end
     
      (* WHILELOOP *)
-    | M(itree(inode("whileLoop",_), 
+     (* Bug fixed and it is building *)
+        | M(itree(inode("whileLoop",_), 
                 [ 
                     itree(inode("while",_), [] ),
                     itree(inode("(",_), [] ),
@@ -412,15 +413,23 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
     ) = 
     let
         fun doBlock(itree(inode("block",_), 
-                [expression1]), m0) = 
+                [expression1]), m2) = 
                 let  
-                    val (v2, m2) = E'(expression1, m0)
-                    val m3 = if dnvToBool(v2) then
-                         M((block, m2), doBlock(expression1, m2))
-                    else m2
-                in m2
+                    val m3 = M(block, m2)
+                    val (v2, m4) = E'(expression1, m3)
+                in 
+                    if dnvToBool(v2) then doBlock(expression1, m4)
+                    else 
+                        m4
                 end
+        | doBlock(itree(inode("block",_), 
+                []), m2) = m2
+        | doBlock _ = raise Fail("Error in Model.M - this should never occur")
         val (v1, m1) = E' (expression, m)
+    in
+        if dnvToBool(v1)  then doBlock(expression, m1)
+        else m1
+    end
         
  
     in
