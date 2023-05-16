@@ -318,9 +318,9 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
   | M( itree(inode("initialization",_), [itree(inode("int",_), []), id, itree(inode("=",_), []), expression] ), m) =
         let
             val(v1, m1) = E'(expression, m)
-            val loc = getLoc(accessEnv(getLeaf(id), m))
+            val loc = getLoc(accessEnv(getLeaf(id), m1))
             val ty = getType(INT, loc)
-            val m2 = updateEnv(getLeaf(id), ty, loc)
+            val m2 = updateEnv(getLeaf(id), ty, loc, m1)
         in
             m2
         end
@@ -328,31 +328,42 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
   | M( itree(inode("initialization",_), [itree(inode("bool",_), []), id, itree(inode("=",_), []), expression] ), m) =
        let
             val(v1, m1) = E'(expression, m)
-            val loc = getLoc(accessEnv(getLeaf(id), m))
+            val loc = getLoc(accessEnv(getLeaf(id), m1))
             val ty = getType(BOOL, loc)
-            val m2 = updateEnv(getLeaf(id), ty, loc)
+            val m2 = updateEnv(getLeaf(id), ty, loc, m1)
         in
             m2
         end
-  (*
+  
   (* BLOCK *)
+  (*
   | M( itree(inode("block",_), [itree(inode("{",_), []), statementList, itree(inode("}",_), [])] ), m) =
         let
         in
         end
-  
+  *)
   (* FORLOOP *)
   | M( itree(inode("forLoop",_), [itree(inode("for",_), []), itree(inode("(",_), []), forInitial, itree(inode(";",_), []), expression, itree(inode(";",_), []), modifiedId, itree(inode(")",_), []), block] ), m) =
         let
+            val(v1, m1) = E'(forInitial, m)
+            val(v2, m2) = E'(expression, m)
+            val(v3, m3) = E'(modifiedId, m)
+            val(v4, m4) = E'(block, m)
         in
+            m2
         end
   
   (* FORINITIAL *)
   | M( itree(inode("forInitial",_), [itree(inode("int",_), []), id, itree(inode("=",_), []), expression] ), m) =
         let
+            val(v1, m1) = E'(expression, m)
+            val loc = getLoc(accessEnv(getLeaf(id), m1))
+            val ty = getType(INT, loc)
+            val m2 = updateEnv(getLeaf(id), ty, loc, m1)
         in
+            m2
         end
-  
+  (*
   (* WHILELOOP *)
   | M( itree(inode("whileLoop",_), [itree(inode("while",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []), block ] ), m) =
         let
