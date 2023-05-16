@@ -339,10 +339,11 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
   
   | M( itree(inode("block",_), [itree(inode("{",_), []), statementList, itree(inode("}",_), [])] ), m) =
         let
-           val (v1, m1) = M(statementList, m)
+           val (v1, m1) = 
         in
+           m1
         end
-  *)
+ *)
   (* FORLOOP *)
   | M( itree(inode("forLoop",_), [itree(inode("for",_), []), itree(inode("(",_), []), forInitial, itree(inode(";",_), []), expression, itree(inode(";",_), []), modifiedId, itree(inode(")",_), []), block] ), m) =
         let
@@ -369,28 +370,34 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
   | M( itree(inode("whileLoop",_), [itree(inode("while",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []), block ] ), m) =
         let
           val (v1, m1) = E'(expression, m)
-          val (v2, m2) = E'(block, m)
         in
-            m
+            if dnvToBool v1 then 
+                let 
+                    val (v2, m2) = E'(block, m) (*I think instances of this are supposed to be M(block, m), but I'm not sure on how to make that work*)
+                in 
+                    m (*not sure about this it's supposed to be M(while (expression) block, m)*)
+                end
+            else m1
         end
  
   (* IFTHEN *)
   | M( itree(inode("ifThen",_), [itree(inode("if",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []), block ] ), m) =
         let
             val (v1, m1) = E'(expression, m)
-            val (v2, m2) = E'(block, m)
+            val (v2, m2) = E'(block, m1)
         in
-            m
+            if dnvToBool v1 then m2
+            else m1
         end
         
   (* IFTHENELSE *)
   | M( itree(inode("ifThenElse",_), [itree(inode("if",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []), block0, itree(inode("else",_), []), block1 ] ), m) =
         let
             val (v1, m1) = E'(expression, m)
-            val (v2, m2) = E'(block0, m)
-            val (v3, m3) = E'(block1, m)
+            val (v2, m2) = E'(block0, m1)
+            val (v3, m3) = E'(block1, m1)
         in
-            m
+            if dnvToBool v1 then m2 else m3
         end
   
   (* OUTPUT *)
