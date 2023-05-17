@@ -225,7 +225,14 @@ fun E'( itree(inode("expression",_), [logicalOr] ), m) = E'(logicalOr, m)
   (* BASE *)
   | E'( itree(inode("base",_), [itree(inode("(",_), []), expression, itree(inode(")",_), [])] ), m) = E'(expression, m)
   
-  | E'( itree(inode("base",_), [itree(inode("|",_), []), expression, itree(inode("|",_), [])] ), m) = E'(expression, m)
+  | E'( itree(inode("base",_), [itree(inode("|",_), []), expression, itree(inode("|",_), [])] ), m) = 
+        let
+            val(v1, m1) = E'(expression, m)
+            val v2 = dnvToInt(v1)
+        in
+            if dnvToInt(v1) >= 0 then (v1, m1)
+            else (Integer (~v2), m1)
+        end
   
   | E'( itree(inode("base",_), [modifiedId] ), m) = E'(modifiedId, m)
   
@@ -394,25 +401,13 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
     
   (* WHILELOOP *)
   (* Bug fixed and it is building *)
-  | M(itree(inode("whileLoop",_), [itree(inode("while",_), [] ), itree(inode("(",_), [] ), expression, itree(inode(")",_), [] ), block ] ), m) =
+  | M(loop as itree(inode("whileLoop",_), [itree(inode("while",_), [] ), itree(inode("(",_), [] ), expression, itree(inode(")",_), [] ), block ] ), m) =
     let
-        fun doBlock(itree(inode("block",_), 
-                [expression1]), m2) = 
-                let  
-                    val m3 = M(block, m2)
-                    val (v2, m4) = E'(expression1, m3)
-                in 
-                    if dnvToBool(v2) then doBlock(expression1, m4)
-                    else 
-                        m4
-                end
-        | doBlock(itree(inode("block",_), 
-                []), m2) = m2
-        | doBlock _ = raise Fail("Error in While loop - No block was declared.")
-        val (v1, m1) = E' (expression, m)
+        val (v1, m1) = E'(expression, m)
+        val m2 = M(block, m1)
     in
-        if dnvToBool(v1)  then doBlock(expression, m1)
-        else m1
+        if dnvToBool(v1) then M(loop, m2)
+        else m
     end
 
   (* OUTPUT *)
