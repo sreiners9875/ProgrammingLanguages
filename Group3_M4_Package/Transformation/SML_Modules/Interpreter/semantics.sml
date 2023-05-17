@@ -236,7 +236,7 @@ fun E'( itree(inode("expression",_), [logicalOr] ), m) = E'(logicalOr, m)
   | E'( itree(inode("prefix",_), [itree(inode("++",_), []), id] ), m) =
         let
             val idLoc = getLoc(accessEnv(getLeaf(id), m))
-            val idStore = dnvToInt (accessStore(idLoc, m))
+            val idStore = dnvToInt(accessStore(idLoc, m))
             val m1 = updateStore(idLoc, Integer(idStore + 1), m)
         in
             (Integer (idStore + 1), m1)
@@ -245,7 +245,7 @@ fun E'( itree(inode("expression",_), [logicalOr] ), m) = E'(logicalOr, m)
   | E'( itree(inode("prefix",_), [itree(inode("--",_), []), id] ), m) =
        let
             val idLoc = getLoc(accessEnv(getLeaf(id), m))
-            val idStore = dnvToInt (accessStore(idLoc, m))
+            val idStore = dnvToInt(accessStore(idLoc, m))
             val m1 = updateStore(idLoc, Integer(idStore - 1), m)
         in
             (Integer (idStore - 1), m1)
@@ -255,7 +255,7 @@ fun E'( itree(inode("expression",_), [logicalOr] ), m) = E'(logicalOr, m)
   | E'( itree(inode("postfix",_), [id, itree(inode("++",_), [])] ), m) =
         let
             val idLoc = getLoc(accessEnv(getLeaf(id), m))
-            val idStore = dnvToInt (accessStore(idLoc, m))
+            val idStore = dnvToInt(accessStore(idLoc, m))
             val m1 = updateStore(idLoc, Integer(idStore + 1), m)
         in
             (Integer (idStore), m1)
@@ -264,7 +264,7 @@ fun E'( itree(inode("expression",_), [logicalOr] ), m) = E'(logicalOr, m)
   | E'( itree(inode("postfix",_), [id, itree(inode("--",_), [])] ), m) =
         let
             val idLoc = getLoc(accessEnv(getLeaf(id), m))
-            val idStore = dnvToInt (accessStore(idLoc, m))
+            val idStore = dnvToInt(accessStore(idLoc, m))
             val m1 = updateStore(idLoc, Integer(idStore - 1), m)
         in
             (Integer (idStore), m1)
@@ -317,67 +317,61 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
   (* INITIALIZATION *)
    | M( itree(inode("initialization",_), [itree(inode("int",_), []), id, itree(inode("=",_), []), expression] ), m) =
         let
-            val(v1, m1) = E'(expression, m)
+            val m1 = updateEnv(getLeaf(id), INT, Model.getCounter(m), m)
+            val(v1, m2) = E'(expression, m1)
             val loc = getLoc(accessEnv(getLeaf(id), m1))
-            val ty = getType(INT, loc)
-            val m2 = updateEnv(getLeaf(id), ty, loc, m1)
+            val m3 = updateStore(loc, v1, m2)
         in
-            m2
+            m3
         end
         
   | M( itree(inode("initialization",_), [itree(inode("bool",_), []), id, itree(inode("=",_), []), expression] ), m) =
        let
-            val(v1, m1) = E'(expression, m)
+            val m1 = updateEnv(getLeaf(id), BOOL, Model.getCounter(m), m)
+            val(v1, m2) = E'(expression, m1)
             val loc = getLoc(accessEnv(getLeaf(id), m1))
-            val ty = getType(BOOL, loc)
-            val m2 = updateEnv(getLeaf(id), ty, loc, m1)
+            val m3 = updateStore(loc, v1, m2)
         in
-            m2
+            m3
         end
   
   (* BLOCK *)
    | M( itree(inode("block",_), [itree(inode("{",_), []), statementList, itree(inode("}",_), [])] ), (env_0, s_0, c0)) =
         let
             val (env_1, s_1, c1) = M(statementList, (env_0, s_0, c0))
-            val m2 = (env_0, s_1,c1)
+            val m2 = (env_0, s_1, c0)
         in
             m2
         end
      
   (* FORLOOP *)
-   | M( itree(inode("forLoop",_), [itree(inode("for",_), []), itree(inode("(",_), []), forInitial, itree(inode(";",_), []), expression, itree(inode(";",_), []), modifiedId, itree(inode(")",_), []), block] ), m) =
+   | M( itree(inode("forLoop",_), [itree(inode("for",_), []), itree(inode("(",_), []), forInitial, itree(inode(";",_), []), expression, itree(inode(";",_), []), modifiedId, itree(inode(")",_), []), block] ), (env0, store0, c0)) =
         let
-            fun doFor(itree(inode("block",_), [expression1]), m3) = 
-                let  
-                    val m4 = M(block, m3)
-                    val m5 = M(modifiedId, m4)
-                    val(v2, m6) = E'(expression1, m5)
-                in 
-                    if dnvToBool(v2) then doFor(expression1, m6)
-                    else 
-                        m6
+            fun loop(expression1, block1, modifiedId1, m) =
+                let 
+                    val (v1, m1) = E'(expression1, m)
+                    val m2 = M(block1, m1)
+                    val (v2, m3) = E'(modifiedId1, m2)
+                in
+                    if dnvToBool(v1) then loop(expression1, block1, modifiedId1, m3)
+                        else
+                            m1
                 end
-            | doFor(itree(inode("block",_), []), m3) = m3
-            | doFor _ = raise Fail("Error in For loop - No block was decalred.")
-        
-            val(v1, m1) = E'(forInitial, m)
-            val(v2, m2) = E'(expression, m1)
+           val m4 = M(forInitial, (env0, store0, c0))
+           val (env1, store1, c1) = loop(expression, block, modifiedId, m4)
         in
-            if dnvToBool(v1)  then doFor(expression, m2)
-            else
-            m2
-            
+            (env0, store1, c0)
         end
   
   (* FORINITIAL *)
   | M( itree(inode("forInitial",_), [itree(inode("int",_), []), id, itree(inode("=",_), []), expression] ), m) =
         let
-            val(v1, m1) = E'(expression, m)
+            val m1 = updateEnv(getLeaf(id), INT, Model.getCounter(m), m)
+            val(v1, m2) = E'(expression, m1)
             val loc = getLoc(accessEnv(getLeaf(id), m1))
-            val ty = getType(INT, loc)
-            val m2 = updateEnv(getLeaf(id), ty, loc, m1)
+            val m3 = updateStore(loc, v1, m2)
         in
-            m2
+            m3
         end
         
   (* IFTHEN *)
@@ -414,7 +408,7 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
                 end
         | doBlock(itree(inode("block",_), 
                 []), m2) = m2
-        | doBlock _ = raise Fail("Error in While loop - No block was decalred.")
+        | doBlock _ = raise Fail("Error in While loop - No block was declared.")
         val (v1, m1) = E' (expression, m)
     in
         if dnvToBool(v1)  then doBlock(expression, m1)
@@ -424,13 +418,52 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
   (* OUTPUT *)
     | M( itree(inode("output",_), [itree(inode("print",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []) ] ), m) =
         let
-            fun prnt (x, m3) = (print(x), m3)
-                val (v1, m1) = E'(expression,m)
-                val v2 = dnvToString(v1)
-                val (v2, m2) = prnt(v2, m1) 
+            val (v1, m1) = E'(expression, m)
+            val v2 = dnvToString(v1)
         in
-            m2
+            print(v2 ^ "\n");
+            m1
         end
+        
+  (* PREFIX *)
+    | M(itree(inode("prefix", _), [itree(inode("++", _), []), id]), m) =
+    let
+        val idLoc = getLoc(accessEnv(getLeaf(id), m))
+        val idStore = dnvToInt(accessStore(idLoc, m))
+        val m1 = updateStore(idLoc, Integer(idStore + 1), m)
+    in
+        m1
+    end
+
+    | M(itree(inode("prefix", _), [itree(inode("--", _), []), id]), m) =
+    let
+        val idLoc = getLoc(accessEnv(getLeaf(id), m))
+        val idStore = dnvToInt(accessStore(idLoc, m))
+        val m1 = updateStore(idLoc, Integer(idStore - 1), m)
+    in
+        m1
+    end
+
+ (* POSTFIX *)
+    | M(itree(inode("postfix", _), [id, itree(inode("++", _), [])]), m) =
+    let
+        val idLoc = getLoc(accessEnv(getLeaf(id), m))
+        val idStore = dnvToInt(accessStore(idLoc, m))
+        val m1 = updateStore(idLoc, Integer(idStore + 1), m)
+    in
+        m1
+    end
+
+  | M(itree(inode("postfix", _), [id, itree(inode("--", _), [])]), m) =
+    let
+        val idLoc = getLoc(accessEnv(getLeaf(id), m))
+        val idStore = dnvToInt(accessStore(idLoc, m))
+        val m1 = updateStore(idLoc, Integer(idStore - 1), m)
+    in
+        m1
+    end
+
+
   (* ERROR HANDLING *)
   | M( itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn M root = " ^ x_root ^ "\n\n")
   | M _ = raise Fail("Error in Model.M - this should never occur")

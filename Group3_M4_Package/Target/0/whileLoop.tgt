@@ -1,0 +1,6 @@
+bool x = true;
+int y = 0;
+while(x) {
+    y = y + 1;
+    if (y == 3) { x = false; }
+}

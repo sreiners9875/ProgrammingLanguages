@@ -358,6 +358,40 @@ fun typeCheck( itree(inode("prog",_), [ statementList ] ), m) = typeCheck(statem
             else tError("Type error[output].")
         end
   
+  (* PREFIX *)
+  | typeCheck( itree(inode("prefix",_), [itree(inode("++",_), []), id] ), m) =
+        let
+            val t1 = typeOf(id, m)
+        in
+            if t1 = INT then m
+            else tError("Type error[prefixS].")
+        end
+  
+  | typeCheck( itree(inode("prefix",_), [itree(inode("--",_), []), id] ), m) =
+        let
+            val t1 = typeOf(id, m)
+        in
+            if t1 = INT then m
+            else tError("Type error[prefixS].")
+        end
+  
+  (* POSTFIX *)
+  | typeCheck( itree(inode("postfix",_), [id, itree(inode("++",_), [])] ), m) =
+        let
+            val t1 = typeOf(id, m)
+        in
+            if t1 = INT then m
+            else tError("Type error[postfixS].")
+        end
+  
+  | typeCheck( itree(inode("postfix",_), [id, itree(inode("--",_), [])] ), m) =
+        let
+            val t1 = typeOf(id, m)
+        in
+            if t1 = INT then m
+            else tError("Type error[postfixS].")
+        end
+  
   (* ERROR HANDLING *)
   | typeCheck( itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn typeCheck root = " ^ x_root ^ "\n\n")
   | typeCheck _ = raise Fail("Error in Model.typeCheck - this should never occur")

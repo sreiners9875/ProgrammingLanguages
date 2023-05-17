@@ -1,0 +1,3 @@
+bool y;
+y = true;
+print(y);
