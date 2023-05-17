@@ -1,4 +1,8 @@
 int y;
 int z;
 int x;
+
 int s = 10;
+print(1 + true);
+print(true + false);
+print(true < 2);
