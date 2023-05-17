@@ -358,7 +358,7 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
                         m6
                 end
             | doFor(itree(inode("block",_), []), m3) = m3
-            | doFor _ = raise Fail("Error in Model.M - this should never occur")
+            | doFor _ = raise Fail("Error in For loop - No block was decalred.")
         
             val(v1, m1) = E'(forInitial, m)
             val(v2, m2) = E'(expression, m1)
@@ -414,19 +414,23 @@ fun M( itree(inode("prog",_), [ statementList ] ), m) = M(statementList, m)
                 end
         | doBlock(itree(inode("block",_), 
                 []), m2) = m2
-        | doBlock _ = raise Fail("Error in Model.M - this should never occur")
+        | doBlock _ = raise Fail("Error in While loop - No block was decalred.")
         val (v1, m1) = E' (expression, m)
     in
         if dnvToBool(v1)  then doBlock(expression, m1)
         else m1
     end
-  (*
+
   (* OUTPUT *)
-  | M( itree(inode("output",_), [itree(inode("print",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []) ] ), m) =
+    | M( itree(inode("output",_), [itree(inode("print",_), []), itree(inode("(",_), []), expression, itree(inode(")",_), []) ] ), m) =
         let
+            fun prnt (x, m3) = (print(x), m3)
+                val (v1, m1) = E'(expression,m)
+                val v2 = dnvToString(v1)
+                val (v2, m2) = prnt(v2, m1) 
         in
+            m2
         end
-  *)
   (* ERROR HANDLING *)
   | M( itree(inode(x_root,_), children),_) = raise General.Fail("\n\nIn M root = " ^ x_root ^ "\n\n")
   | M _ = raise Fail("Error in Model.M - this should never occur")
