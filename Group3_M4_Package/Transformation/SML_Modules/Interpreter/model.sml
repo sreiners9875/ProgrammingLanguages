@@ -122,9 +122,9 @@ fun accessStore(loc0: loc, (environ : env, stored: store, c: counter)) =
         val msg = "Error: accessStore " ^ Int.toString loc0 ^ " not found.";
         
         fun aux [] = error msg
-            | aux ((loc1, denotable_value)::store) =
-                if loc0 = loc1 then denotable_value
-                else aux stored;
+            | aux ((loc1:loc , dnv: denotable_value)::store) =
+                if loc0 = loc1 then dnv
+                else aux store;
     in
         aux stored
     end;

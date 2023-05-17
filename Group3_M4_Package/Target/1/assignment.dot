@@ -1,0 +1,101 @@
+
+digraph "assignment"
+{
+struct1 [label="prog"]
+struct2 [label="statementList"]
+struct3 [label="statement"]
+struct4 [label="declaration"]
+struct5 [label="int"]
+struct4->struct5
+struct6 [label="id"]
+struct7 [label="x"]
+struct6->struct7
+struct4->struct6
+struct3->struct4
+struct8 [label=";"]
+struct3->struct8
+struct2->struct3
+struct9 [label="statementList"]
+struct10 [label="statement"]
+struct11 [label="assignment"]
+struct12 [label="id"]
+struct13 [label="x"]
+struct12->struct13
+struct11->struct12
+struct14 [label="="]
+struct11->struct14
+struct15 [label="expression"]
+struct16 [label="logicalOr"]
+struct17 [label="logicalAnd"]
+struct18 [label="equality"]
+struct19 [label="relational"]
+struct20 [label="additive"]
+struct21 [label="multiplicative"]
+struct22 [label="factor"]
+struct23 [label="exponent"]
+struct24 [label="base"]
+struct25 [label="integer"]
+struct26 [label="1"]
+struct25->struct26
+struct24->struct25
+struct23->struct24
+struct22->struct23
+struct21->struct22
+struct20->struct21
+struct19->struct20
+struct18->struct19
+struct17->struct18
+struct16->struct17
+struct15->struct16
+struct11->struct15
+struct10->struct11
+struct27 [label=";"]
+struct10->struct27
+struct9->struct10
+struct28 [label="statementList"]
+struct29 [label="statement"]
+struct30 [label="initialization"]
+struct31 [label="int"]
+struct30->struct31
+struct32 [label="id"]
+struct33 [label="y"]
+struct32->struct33
+struct30->struct32
+struct34 [label="="]
+struct30->struct34
+struct35 [label="expression"]
+struct36 [label="logicalOr"]
+struct37 [label="logicalAnd"]
+struct38 [label="equality"]
+struct39 [label="relational"]
+struct40 [label="additive"]
+struct41 [label="multiplicative"]
+struct42 [label="factor"]
+struct43 [label="exponent"]
+struct44 [label="base"]
+struct45 [label="id"]
+struct46 [label="x"]
+struct45->struct46
+struct44->struct45
+struct43->struct44
+struct42->struct43
+struct41->struct42
+struct40->struct41
+struct39->struct40
+struct38->struct39
+struct37->struct38
+struct36->struct37
+struct35->struct36
+struct30->struct35
+struct29->struct30
+struct47 [label=";"]
+struct29->struct47
+struct28->struct29
+struct48 [label="statementList"]
+struct49 [label="epsilon"]
+struct48->struct49
+struct28->struct48
+struct9->struct28
+struct2->struct9
+struct1->struct2
+}
